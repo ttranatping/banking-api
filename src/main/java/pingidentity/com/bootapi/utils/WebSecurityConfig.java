@@ -94,26 +94,32 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
 			if (StringUtils.hasLength(jwt)) {
 				logger.info("getPreAuthenticatedPrincipal:Has JWT");
+
+				String paJWKSUrl = "";
 				
-				String scheme = StringUtils.isEmpty(request
-						.getHeader("X-Forwarded-Proto")) ? request.getScheme()
-						: request.getHeader("X-Forwarded-Proto");
+				String paJWKSUrlHeader = request.getHeader("X-PA-JWKS-ENDPOINT");
+				
+				if(!StringUtils.isEmpty(paJWKSUrlHeader))
+				{
+					paJWKSUrl = String.format("%s/pa/authtoken/JWKS",
+							paJWKSUrlHeader);
+				}
+				else
+				{
+				
+					String scheme = StringUtils.isEmpty(request
+							.getHeader("X-Forwarded-Proto")) ? request.getScheme()
+							: request.getHeader("X-Forwarded-Proto");
 
-				String serverName = request.getServerName();
-				int serverPort = request.getServerPort();
-				String host = StringUtils.isEmpty(request.getHeader("host")) ? String
-						.format("%s:%s", serverName, serverPort) : request
-						.getHeader("host");
-
-				String paJWKSUrl = String.format("%s://%s/pa/authtoken/JWKS",
-						scheme, host);
-
-				// TODO More bad stuff
-				String overridePAJWKSUrl = request
-						.getParameter("overrideJWKSUrl");
-				if (!StringUtils.isEmpty(overridePAJWKSUrl))
-					paJWKSUrl = overridePAJWKSUrl;
-				// End more bad stuff
+					String serverName = request.getServerName();
+					int serverPort = request.getServerPort();
+					String host = StringUtils.isEmpty(request.getHeader("host")) ? String
+							.format("%s:%s", serverName, serverPort) : request
+							.getHeader("host");
+				
+					paJWKSUrl = String.format("%s://%s/pa/authtoken/JWKS",
+							scheme, host);
+				}
 
 				logger.info("getPreAuthenticatedPrincipal:JWKS URL: " + paJWKSUrl);
 
